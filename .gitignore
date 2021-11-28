@@ -1,4 +1,5 @@
 venv
+venv_nlp
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
