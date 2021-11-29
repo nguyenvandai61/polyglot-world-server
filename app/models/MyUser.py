@@ -21,6 +21,37 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    def create_user(self, username, password, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(username, password, **extra_fields)
+
+    def _create_user(self, username, password, **extra_fields):
+        """
+        Creates and saves a User with the given email and password.
+        """
+        if not username:
+            raise ValueError('Users must have an username')
+
+        user = self.model(
+            username=username,
+        )
+        user.username = username
+        user.set_password(password)
+        email = extra_fields.pop('email', None)
+        first_name = extra_fields.pop('first_name', None)
+        last_name = extra_fields.pop('last_name', None)
+        country = extra_fields.pop('country', None)
+        avatar = extra_fields.pop('avatar', None)
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        user.country = country
+        if avatar:
+            user.avatar = avatar
+        user.save(using=self._db)
+        return user        
+
     def create_superuser(self, username, password):
         """
         Creates and saves a superuser with the given email and password.
