@@ -1,5 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
+User = get_user_model()
+# from app.models.User import User
 
 
 class MeAPIView(APIView):
@@ -16,4 +19,31 @@ class MeAPIView(APIView):
             'email': email,
             'first_name': first,
             'last_name': last,
+        })
+
+class RegisterAPIView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        name = request.data.get('name')
+        first = name.split(' ')[0]
+        last = name.split(' ')[1]
+        country = request.data.get('country')
+        languages = request.data.get('languages')
+        is_admin = False
+        
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first,
+            last_name=last,
+            country=country,
+            languages=languages,
+            is_admin=is_admin,
+        )
+        return Response({
+            'user_id': user.id,
+            'username': user.username,
         })
