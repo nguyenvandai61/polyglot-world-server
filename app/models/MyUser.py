@@ -73,6 +73,8 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png')
+    gender = models.BooleanField(default=1)
+
     country = models.CharField(max_length=30, default='Viet Nam')
     languages = models.ManyToManyField(Language, related_name='languages')
 

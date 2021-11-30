@@ -29,6 +29,7 @@ class RegisterAPIView(APIView):
         name = request.data.get('name')
         first = name.split(' ')[0]
         last = name.split(' ')[1]
+        gender = request.data.get('gender')
         country = request.data.get('country')
         languages = request.data.get('languages')
         is_admin = False
@@ -42,6 +43,7 @@ class RegisterAPIView(APIView):
                 country=country,
                 languages=languages,
                 is_admin=is_admin,
+                gender=gender
             )
         except Exception as e:
             return Response({
@@ -50,7 +52,15 @@ class RegisterAPIView(APIView):
                 'detail_code': e.args[1]
             }, status=400)
         
-        return Response({
-            'user_id': user.id,
-            'username': user.username,
-        })
+        return Response(
+            {
+                'status': 'success',
+                'data': {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                }
+            }
+        )
