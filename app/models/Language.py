@@ -8,9 +8,16 @@ class Language(models.Model):
     def __str__(self):
         return self.name
     
+    def create(self, name, code, description):
+        self.name = name
+        self.code = code
+        self.description = description
+        self.save()
+        return self
+
     class Meta:
         db_table = 'language'
         verbose_name = 'Language'
         verbose_name_plural = 'Languages'
-        ordering = ['name']    
+        ordering = ['name']
         

@@ -28,7 +28,7 @@ class RegisterAPIView(APIView):
         password = request.data.get('password')
         name = request.data.get('name')
         first = name.split(' ')[0]
-        last = name.split(' ')[1]
+        last = '' if len(name.split(' ')) == 1 else name.split(' ')[1]
         gender = request.data.get('gender')
         country = request.data.get('country')
         languages = request.data.get('languages')

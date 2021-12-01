@@ -1,17 +1,10 @@
 import json
 from django.http.response import JsonResponse
 
-from rest_framework import generics
-from app.models import Country
+from rest_framework.views import APIView
 
 
-class CountryList(generics.ListAPIView):
-    
-    def get_queryset(self):
-        """
-        Return a list of all the countries.
-        """
-        return Country.objects.all()
+class CountryList(APIView):
 
     def get(self, request, *args, **kwargs):
         """
