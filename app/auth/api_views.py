@@ -20,6 +20,21 @@ class MeAPIView(APIView):
             'first_name': first,
             'last_name': last,
         })
+class DataLogin(APIView):
+    def get(self, request):
+        user_id = request.user.id
+        username = request.user.username
+        email = request.user.email
+        name = request.user.first_name + ' ' + request.user.last_name
+        avatar = request.user.avatar
+        
+        return Response({
+            'user_id': user_id,
+            'username': username,
+            'email': email,
+            'name': name,
+            'avatar': avatar,
+        })
 
 class RegisterAPIView(APIView):
     def post(self, request):

@@ -72,7 +72,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png')
+    avatar = models.CharField(max_length=200, default="avatars/default/default-avatar_n5b5k4.png")
     gender = models.BooleanField(default=1)
 
     country = models.CharField(max_length=30, default='Viet Nam')
