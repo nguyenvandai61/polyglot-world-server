@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser, AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
+
+from app.config import POLYGLOT_CLOUDINARY_URL
 from .Language import Language
 from .LearnProgress import LearnProgress
 
@@ -81,7 +83,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     avatar = models.CharField(
-        max_length=200, default="avatars/default/default-avatar_n5b5k4.png")
+        max_length=200, default=POLYGLOT_CLOUDINARY_URL+"/avatars/default/default-avatar_n5b5k4.png")
     gender = models.BooleanField(default=1)
 
     country = models.CharField(max_length=30, default='Viet Nam')
