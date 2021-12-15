@@ -4,7 +4,8 @@ from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
 
-from app.config import POLYGLOT_CLOUDINARY_URL
+from config import POLYGLOT_CLOUDINARY_URL
+
 from .Language import Language
 from .LearnProgress import LearnProgress
 

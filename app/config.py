@@ -1,1 +1,0 @@
-POLYGLOT_CLOUDINARY_URL = "http://res.cloudinary.com/danangbkdn/image/upload/v1639246924/polyglot-world"
