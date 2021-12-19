@@ -23,12 +23,21 @@ class AvatarUpload(generics.UpdateAPIView):
     Upload avatar.
     """
 
+    def get_object(self):
+        user_id = self.kwargs.get('id')
+        user = MyUser.objects.get(id=user_id)
+        return user
+
     def update(self, request, *args, **kwargs):
-        if request.user is None or request.user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED, data={
-                'status': 'failed',
-                'detail': 'Authentication credentials were not provided.'})
-        user_id = request.user.id
+        user_id = self.kwargs.get('id')
+        print(user_id)
+        print(request.user.id)
+        if user_id != request.user.id:
+            return Response(status=status.HTTP_403_FORBIDDEN, data={
+                'status': 'error',
+                'detail': 'You are not allowed to change this user.'
+            })
+
         avatar = request.data.get('avatar')
         folder = 'avatars/'+str(user_id)
         # Upload image to cloudinary
@@ -39,7 +48,7 @@ class AvatarUpload(generics.UpdateAPIView):
             resource_type="image"
         )
         # Update user avatar
-        user = request.user
+        user = self.get_object()
         user.avatar = cloudImage['url']
         user.save()
         return Response(status=status.HTTP_200_OK, data={
