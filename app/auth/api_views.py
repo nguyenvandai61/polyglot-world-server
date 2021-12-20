@@ -47,6 +47,7 @@ class RegisterAPIView(APIView):
         gender = request.data.get('gender')
         country = request.data.get('country')
         languages = request.data.get('languages')
+
         is_admin = False
         try:
             user = User.objects.create_user(
@@ -64,7 +65,6 @@ class RegisterAPIView(APIView):
             return Response({
                 'status': 'error',
                 'error_code': e.args[0],
-                'detail_code': e.args[1]
             }, status=400)
         
         return Response(

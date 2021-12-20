@@ -3,7 +3,12 @@ from django.contrib.auth.models import AbstractUser, AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
+
+from config import POLYGLOT_CLOUDINARY_URL
+
 from .Language import Language
+from .LearnProgress import LearnProgress
+
 
 class MyUserManager(BaseUserManager):
     def create_user(self, username, password=None):
@@ -47,10 +52,15 @@ class MyUserManager(BaseUserManager):
         user.first_name = first_name
         user.last_name = last_name
         user.country = country
+
+        default_learn_progress = LearnProgress()
+        default_learn_progress.save()
+        user.learn_progress = default_learn_progress
+
         if avatar:
             user.avatar = avatar
         user.save(using=self._db)
-        return user        
+        return user
 
     def create_superuser(self, username, password):
         """
@@ -58,21 +68,23 @@ class MyUserManager(BaseUserManager):
         """
         user = self.create_user(
             username,
-            password=password,
+            password,
         )
         user.is_admin = True
         user.save(using=self._db)
         return user
-    
+
     def get_by_natural_key(self, username):
         return self.get(**{self.model.USERNAME_FIELD: username})
+
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    avatar = models.CharField(max_length=200, default="avatars/default/default-avatar_n5b5k4.png")
+    avatar = models.CharField(
+        max_length=200, default=POLYGLOT_CLOUDINARY_URL+"/avatars/default/default-avatar_n5b5k4.png")
     gender = models.BooleanField(default=1)
 
     country = models.CharField(max_length=30, default='Viet Nam')
@@ -84,13 +96,16 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
 
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    learn_progress = models.OneToOneField(
+        LearnProgress, on_delete=models.CASCADE, null=True, blank=True)
+
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
 
     def get_full_name(self):
         return self.first_name + ' ' + self.last_name
-    
+
     def get_short_name(self):
         return self.first_name
 
@@ -104,4 +119,3 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         db_table = 'auth_user'
         verbose_name = 'User'
         verbose_name_plural = 'Users'
-
