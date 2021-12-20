@@ -1,18 +1,16 @@
-from rest_framework import generics, serializers, status
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from app.mserializers.PostSerializers import PostSerializer
 from app.models.Post import Post
 from app.models.Language import Language
+from app.utils.paginations import SmallResultsSetPagination
 
 
 class PostList(generics.ListCreateAPIView):
     serializer_class = PostSerializer
     queryset = Post.objects.all()
-
-    def get_queryset(self):
-        queryset = Post.objects.all()
-        return queryset
+    pagination_class = SmallResultsSetPagination
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -57,3 +55,13 @@ class PostInfo(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
         self.get_object().delete()
         return Response(status=status.HTTP_204_NO_CONTENT, data={"detail": "Post deleted"})
+
+
+class PostListByUser(generics.ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        queryset = self.queryset.filter(author=self.kwargs['pk'])
+        return queryset
