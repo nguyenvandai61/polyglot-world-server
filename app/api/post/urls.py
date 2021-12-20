@@ -3,6 +3,6 @@ from .api import PostList, PostInfo
 
 
 urlpatterns = [
-    # path('<int:pk>/', PostList.as_view(), name='post-list'),
     path('', PostList.as_view(), name='post-list'),
+    path('<int:pk>/', PostInfo.as_view(), name='post-list'),
 ]
