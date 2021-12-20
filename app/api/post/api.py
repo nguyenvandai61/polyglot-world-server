@@ -65,3 +65,25 @@ class PostListByUser(generics.ListAPIView):
     def get_queryset(self):
         queryset = self.queryset.filter(author=self.kwargs['pk'])
         return queryset
+    
+
+class PostListByLanguage(generics.ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        lang_id = Language.objects.get(code=self.kwargs['code'])
+        queryset = self.queryset.filter(language=lang_id)
+        return queryset
+    
+
+class PostListByLanguageAndUser(generics.ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        lang_id = Language.objects.get(code=self.kwargs['code'])
+        queryset = self.queryset.filter(language=lang_id, author=self.kwargs['pk'])
+        return queryset
