@@ -1,6 +1,6 @@
 from django.urls import include, path
 from .api import PostList, PostInfo, PostListByUser, PostListByLanguage, PostListByLanguageAndUser
-from .api_actions import PostHeart
+from .api_actions import PostHeart, PostComment
 
 urlpatterns = [
     path('', PostList.as_view(), name='post-list'),
@@ -11,4 +11,5 @@ urlpatterns = [
     
     # Actions
     path('<int:pk>/heart/', PostHeart.as_view(), name='post-like'),
+    path('<int:pk>/comment/', PostComment.as_view(), name='post-comment'),
 ]
