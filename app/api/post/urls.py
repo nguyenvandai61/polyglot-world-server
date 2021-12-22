@@ -12,4 +12,5 @@ urlpatterns = [
     # Actions
     path('<int:pk>/heart/', PostHeart.as_view(), name='post-like'),
     path('<int:pk>/comment/', PostComment.as_view(), name='post-comment'),
+    path('<int:pk>/comment/<int:comment_id>/', PostComment.as_view(), name='post-comment'),
 ]

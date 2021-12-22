@@ -5,6 +5,7 @@ from django.db import models
 class Comment(models.Model):
     author = models.ForeignKey('MyUser', on_delete=models.CASCADE)
     content = models.TextField(default='')
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
     time_stamp = models.DateTimeField(auto_now_add=True)
     modified_time = models.DateTimeField(auto_now=True)
     upvotes = models.ManyToManyField('MyUser', related_name='upvotes', blank=True)
@@ -20,8 +21,9 @@ class Comment(models.Model):
         db_table = 'comment'
         ordering = ['-time_stamp']
         
-    def create(self, author, content):
+    def create(self, author, post, content):
         self.author = author
+        self.post = post
         self.content = content
         self.save()
         return self
