@@ -1,6 +1,6 @@
 from django.urls import include, path
 from .api import PostList, PostInfo, PostListByUser, PostListByLanguage, PostListByLanguageAndUser
-
+from .api_actions import PostHeart
 
 urlpatterns = [
     path('', PostList.as_view(), name='post-list'),
@@ -8,4 +8,7 @@ urlpatterns = [
     path('user/<int:pk>/', PostListByUser.as_view(), name='post-list-by-user'),
     path('lang/<str:code>/', PostListByLanguage.as_view(), name='post-list-by-language'),
     path('lang/<str:code>/user/<int:pk>/', PostListByLanguageAndUser.as_view(), name='post-list-by-language-and-user'),
+    
+    # Actions
+    path('<int:pk>/heart/', PostHeart.as_view(), name='post-like'),
 ]
