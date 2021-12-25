@@ -12,6 +12,7 @@ class Comment(models.Model):
     downvotes = models.ManyToManyField('MyUser', related_name='downvotes', blank=True)
     n_upvote = models.IntegerField(default=0)
     n_downvote = models.IntegerField(default=0)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     child_comments = models.ManyToManyField('self', related_name='child_comments', blank=True)
 
     def __str__(self):
@@ -20,10 +21,13 @@ class Comment(models.Model):
     class Meta:
         db_table = 'comment'
         ordering = ['-time_stamp']
-        
-    def create(self, author, post, content):
+    
+    def create(self, author, post, content, parent=None):
         self.author = author
         self.post = post
         self.content = content
+        self.parent_comment = parent
         self.save()
         return self
+    
+    
