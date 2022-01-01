@@ -1,9 +1,11 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
+from app.models.MyUser import MyUser
 
-from app.mserializers.PostSerializers import PostSerializer
+from app.mserializers.PostSerializers import PostCreateSerializer, PostSerializer
 from app.models.Post import Post
 from app.models.Language import Language
+from app.mserializers.UserSerialziers import ProfileGeneralSerializer
 from app.utils.paginations import SmallResultsSetPagination
 
 
@@ -14,10 +16,11 @@ class PostList(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        data["author"] = request.user.id
+        author_id = request.user.id
+        data["author"] = author_id
         data['language'] = Language.objects.get(
             code=request.data['lang_code']).id
-        serializer = PostSerializer(data=data)
+        serializer = PostCreateSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

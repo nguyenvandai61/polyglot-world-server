@@ -19,3 +19,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_total_exp(self, user):
         return user.learn_progress.total_exp
+
+
+class ProfileGeneralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MyUser
+        fields = ('id', 'username', 'first_name', 'last_name', 'avatar')

@@ -1,10 +1,12 @@
-from rest_framework import generics, mixins, status, permissions
+from rest_framework import generics, mixins, serializers, status, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.pagination import LimitOffsetPagination
 from app.models.Comment import Comment
 
 from app.models.Post import Post
-from app.mserializers.CommentSerializers import CommentSerializer
+from app.mserializers.CommentSerializers import CommentCreateSerializer, CommentSerializer
+from app.mserializers.UserSerialziers import ProfileGeneralSerializer
 from app.utils.paginations import SmallResultsSetPagination
 
 
@@ -16,8 +18,16 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
     queryset = Comment.objects.all()
 
     def get_queryset(self):
-        return super().get_queryset().filter(post_id=self.kwargs['pk'])    
-
+        return super().get_queryset().filter(post_id=self.kwargs['pk'])
+    
+    def paginate_queryset(self, queryset):
+        """
+        Return a single page of results, or `None` if pagination is disabled.
+        """
+        if (self.request.query_params.get('limit') or self.request.query_params.get('offset')):
+            self.pagination_class = LimitOffsetPagination
+        return self.paginator.paginate_queryset(queryset, self.request, view=self)  
+    
     def post(self, request, *args, **kwargs):
         post_id = self.kwargs['pk']
         content = request.data['content']
@@ -29,14 +39,9 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
             comment = Comment().create(author=request.user, content=content, post=post)
             post.comments.add(comment)
             post.n_comment += 1
+            serializer = CommentCreateSerializer(comment)
             post.save()
-            return Response(status=status.HTTP_200_OK, data={
-                "id": comment.id,
-                "author_id": comment.author.id,
-                "content": comment.content,
-                "time_stamp": comment.time_stamp,
-                "detail": "Comment created"
-            })
+            return Response(status=status.HTTP_201_CREATED, data=serializer.data)
         except Post.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
     
