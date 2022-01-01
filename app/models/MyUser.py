@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser, AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
+from app.models.Post import Post
 
 from config import POLYGLOT_CLOUDINARY_URL
 
@@ -95,10 +96,9 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True)
-
     learn_progress = models.OneToOneField(
         LearnProgress, on_delete=models.CASCADE, null=True, blank=True)
-
+    
     objects = MyUserManager()
 
     USERNAME_FIELD = 'username'
@@ -115,6 +115,9 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     def get_by_natural_key(self, username):
         return self.get(username=username)
 
+    def is_hearted(self, post_id):
+        return self.hearts.filter(id=post_id).exists()
+    
     class Meta:
         db_table = 'auth_user'
         verbose_name = 'User'
