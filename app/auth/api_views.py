@@ -14,12 +14,13 @@ class MeAPIView(APIView):
         last = request.user.last_name
         
         return Response({
-            'user_id': user_id,
+            'id': user_id,
             'username': username,
             'email': email,
             'first_name': first,
             'last_name': last,
         })
+        
 class DataLogin(APIView):
     def get(self, request):
         user_id = request.user.id
@@ -29,7 +30,7 @@ class DataLogin(APIView):
         avatar = request.user.avatar
         
         return Response({
-            'user_id': user_id,
+            'id': user_id,
             'username': username,
             'email': email,
             'name': name,

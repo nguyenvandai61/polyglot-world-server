@@ -13,8 +13,8 @@ class ProfileDetail(generics.RetrieveAPIView):
     serializer_class = ProfileSerializer
 
     def get_object(self):
-        user_id = self.kwargs.get('id')
-        user = MyUser.objects.get(id=user_id)
+        id = self.kwargs.get('id')
+        user = MyUser.objects.get(id=id)
         return user
 
 
