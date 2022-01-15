@@ -22,16 +22,16 @@ class AvatarUpload(generics.UpdateAPIView):
     """
     Upload avatar.
     """
-
     def get_object(self):
         user_id = self.kwargs.get('id')
         user = MyUser.objects.get(id=user_id)
         return user
 
+    def get_serializer(self, *args, **kwargs):
+        pass
+    
     def update(self, request, *args, **kwargs):
         user_id = self.kwargs.get('id')
-        print(user_id)
-        print(request.user.id)
         if user_id != request.user.id:
             return Response(status=status.HTTP_403_FORBIDDEN, data={
                 'status': 'error',
