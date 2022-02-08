@@ -22,8 +22,9 @@ class PostList(generics.ListCreateAPIView):
             code=request.data['lang_code']).id
         serializer = PostCreateSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            new_post = serializer.save()
+            ret_serializer = PostSerializer(new_post)
+            return Response(ret_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -65,8 +66,8 @@ class PostListByUser(generics.ListAPIView):
     serializer_class = PostSerializer
     pagination_class = SmallResultsSetPagination
     
-    def get_queryset(self):
-        queryset = self.queryset.filter(author=self.kwargs['pk'])
+    def get_queryset(self, *args, **kwargs):
+        queryset = self.queryset.filter(author=kwargs['pk'])
         return queryset
     
 

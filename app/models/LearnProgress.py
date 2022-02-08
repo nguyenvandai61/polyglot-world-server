@@ -3,7 +3,12 @@ from django.db import models
 class LearnProgress(models.Model):
     streak_count = models.IntegerField(default=0, null=False, blank=False)
     total_exp = models.IntegerField(default=0, null=False, blank=False)
-    last_learned = models.DateTimeField(auto_now_add=False, null=True, blank=True)
+    # lastest7dayexp = {
+    #     '2020-01-15': 1000,
+    #     '2020-01-16': 2000,
+    # }
+    lastest7dayexp = models.JSONField(default=None, null=True, blank=True)
+    language = models.ForeignKey('Language', on_delete=models.CASCADE, default=1)
     level = property(lambda self: self.get_level())
 
     class Meta:

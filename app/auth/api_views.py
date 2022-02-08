@@ -1,11 +1,18 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
+
+from app.models.MyUser import MyUser
+from rest_framework import permissions
+
+from app.mserializers.UserSerialziers import UserLearnProgressSerializer
 User = get_user_model()
 # from app.models.User import User
 
 
 class MeAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get(self, request):
         user_id = request.user.id
         username = request.user.username
@@ -14,13 +21,16 @@ class MeAPIView(APIView):
         last = request.user.last_name
         
         return Response({
-            'user_id': user_id,
+            'id': user_id,
             'username': username,
             'email': email,
             'first_name': first,
             'last_name': last,
         })
+        
 class DataLogin(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get(self, request):
         user_id = request.user.id
         username = request.user.username
@@ -29,7 +39,7 @@ class DataLogin(APIView):
         avatar = request.user.avatar
         
         return Response({
-            'user_id': user_id,
+            'id': user_id,
             'username': username,
             'email': email,
             'name': name,
@@ -79,3 +89,14 @@ class RegisterAPIView(APIView):
                 }
             }
         )
+
+
+class MyLearnProgressAPI(APIView):
+    serializer_class = UserLearnProgressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        user_id = request.user.id
+        user = MyUser.objects.get(id=user_id)
+        serializer = self.serializer_class(user)
+        return Response(serializer.data)

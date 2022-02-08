@@ -1,9 +1,11 @@
 from app.models.MyUser import MyUser
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers, status, permissions
 from rest_framework.response import Response
-from app.mserializers.UserSerialziers import ProfileSerializer
+from app.mserializers.UserSerialziers import ProfileSerializer, UserLearnProgressSerializer
 from app.models.LearnProgress import LearnProgress
 import cloudinary.uploader
+
+from app.utils.paginations import SmallResultsSetPagination
 
 
 class ProfileDetail(generics.RetrieveAPIView):
@@ -13,8 +15,8 @@ class ProfileDetail(generics.RetrieveAPIView):
     serializer_class = ProfileSerializer
 
     def get_object(self):
-        user_id = self.kwargs.get('id')
-        user = MyUser.objects.get(id=user_id)
+        id = self.kwargs.get('id')
+        user = MyUser.objects.get(id=id)
         return user
 
 
@@ -22,16 +24,16 @@ class AvatarUpload(generics.UpdateAPIView):
     """
     Upload avatar.
     """
-
     def get_object(self):
         user_id = self.kwargs.get('id')
         user = MyUser.objects.get(id=user_id)
         return user
 
+    def get_serializer(self, *args, **kwargs):
+        pass
+    
     def update(self, request, *args, **kwargs):
         user_id = self.kwargs.get('id')
-        print(user_id)
-        print(request.user.id)
         if user_id != request.user.id:
             return Response(status=status.HTTP_403_FORBIDDEN, data={
                 'status': 'error',
@@ -56,3 +58,13 @@ class AvatarUpload(generics.UpdateAPIView):
             'detail': 'Avatar updated.',
             'avatar': user.avatar
         })
+
+
+class UserLearnProgress(generics.GenericAPIView):
+    serializer_class = UserLearnProgressSerializer
+    
+    def get(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('id')
+        user = MyUser.objects.get(id=user_id)
+        serializer = self.get_serializer(user)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
