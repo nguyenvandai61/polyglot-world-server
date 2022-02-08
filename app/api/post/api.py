@@ -66,8 +66,8 @@ class PostListByUser(generics.ListAPIView):
     serializer_class = PostSerializer
     pagination_class = SmallResultsSetPagination
     
-    def get_queryset(self):
-        queryset = self.queryset.filter(author=self.kwargs['pk'])
+    def get_queryset(self, *args, **kwargs):
+        queryset = self.queryset.filter(author=kwargs['pk'])
         return queryset
     
 

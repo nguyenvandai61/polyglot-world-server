@@ -1,9 +1,11 @@
 from app.models.MyUser import MyUser
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers, status, permissions
 from rest_framework.response import Response
-from app.mserializers.UserSerialziers import ProfileSerializer
+from app.mserializers.UserSerialziers import ProfileSerializer, UserLearnProgressSerializer
 from app.models.LearnProgress import LearnProgress
 import cloudinary.uploader
+
+from app.utils.paginations import SmallResultsSetPagination
 
 
 class ProfileDetail(generics.RetrieveAPIView):
@@ -56,3 +58,13 @@ class AvatarUpload(generics.UpdateAPIView):
             'detail': 'Avatar updated.',
             'avatar': user.avatar
         })
+
+
+class UserLearnProgress(generics.GenericAPIView):
+    serializer_class = UserLearnProgressSerializer
+    
+    def get(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('id')
+        user = MyUser.objects.get(id=user_id)
+        serializer = self.get_serializer(user)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)

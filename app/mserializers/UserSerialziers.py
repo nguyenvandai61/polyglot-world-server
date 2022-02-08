@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from app.models.MyUser import MyUser
+from app.mserializers.LearnProgressSerializers import LearnProgressSerializer
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -22,6 +23,13 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ProfileGeneralSerializer(serializers.ModelSerializer):
+    learn_progress = LearnProgressSerializer()
     class Meta:
         model = MyUser
-        fields = ('id', 'username', 'first_name', 'last_name', 'avatar')
+        fields = ('id', 'username', 'first_name', 'last_name', 'avatar', 'learn_progress')
+        
+
+class UserLearnProgressSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        serializer = LearnProgressSerializer(instance.learn_progress)
+        return serializer.data
