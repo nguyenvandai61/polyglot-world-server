@@ -5,7 +5,6 @@ from app.models.MyUser import MyUser
 from app.mserializers.PostSerializers import PostCreateSerializer, PostSerializer
 from app.models.Post import Post
 from app.models.Language import Language
-from app.mserializers.UserSerialziers import ProfileGeneralSerializer
 from app.utils.paginations import SmallResultsSetPagination
 
 
@@ -67,7 +66,7 @@ class PostListByUser(generics.ListAPIView):
     pagination_class = SmallResultsSetPagination
     
     def get_queryset(self, *args, **kwargs):
-        queryset = self.queryset.filter(author=kwargs['pk'])
+        queryset = self.queryset.filter(author=self.kwargs['pk'])
         return queryset
     
 

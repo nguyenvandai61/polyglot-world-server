@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import Http404
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
@@ -94,6 +94,10 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
     queryset = Question.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = QuestionSubmitAnswerSerializer
+    ftime = "%Y-%m-%d"
+    
+    def format_time(self, time):
+        return time.strftime(self.ftime)
     
     def post(self, request, *args, **kwargs):
         question = self.get_object()
@@ -107,13 +111,24 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
             user.learn_progress.total_exp += question.exp
             
         # Update the user's streak
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = self.format_time(datetime.now())
         lastest7dayexp = user.learn_progress.lastest7dayexp
         lastest7dayexp = lastest7dayexp if lastest7dayexp else {}
+                
         if not date in lastest7dayexp:
-            user.learn_progress.streak_count+=1
-        # datetime now timestamp
-        lastest7dayexp[date] = user.learn_progress.total_exp
+            #  clean the lastest7dayexp
+            for key in lastest7dayexp:
+                if datetime.strptime(key, self.ftime) < datetime.now() - timedelta(days=7):
+                    lastest7dayexp.pop(key)
+            # if yesterday answer is right, add 1 to the streak
+            yesterday = datetime.now() - timedelta(days=1)
+            is_streak = self.format_time(yesterday) in lastest7dayexp
+            user.learn_progress.streak_count+=1 if is_streak else 1
+            # update exp today
+            lastest7dayexp[date] = question.exp
+        else:
+            # update exp today
+            lastest7dayexp[date]+=question.exp
         user.learn_progress.lastest7dayexp = lastest7dayexp
         # Update user's learn progress
         user.learn_progress.save()
@@ -125,5 +140,6 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
                 "message": "Answer submitted",
                 "streak_count": user.learn_progress.streak_count,
                 "total_exp": user.learn_progress.total_exp,
+                "today_exp": lastest7dayexp[date]
             })
         
