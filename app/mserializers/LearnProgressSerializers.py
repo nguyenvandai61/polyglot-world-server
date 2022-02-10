@@ -11,4 +11,4 @@ class LearnProgressSerializer(serializers.ModelSerializer):
     
     def get_today_exp(self, learn_progress):
         today = datetime.now().date().strftime('%Y-%m-%d')
-        return learn_progress.lastest7dayexp.get(today, 0)
+        return learn_progress.lastest7dayexp[today]
