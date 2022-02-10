@@ -7,4 +7,5 @@ urlpatterns = [
     path('language/', include("app.api.language.urls"), name="language"),
     path('user/', include("app.api.user.urls"), name="user"),
     path('post/', include("app.api.post.urls"), name="post"),
+    path('question/', include("app.api.question.urls"), name="question"),
 ]
