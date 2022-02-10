@@ -128,7 +128,8 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
             lastest7dayexp[date] = question.exp
         else:
             # update exp today
-            lastest7dayexp[date]+=question.exp
+            if is_right:
+                lastest7dayexp[date] += question.exp
         user.learn_progress.lastest7dayexp = lastest7dayexp
         # Update user's learn progress
         user.learn_progress.save()
