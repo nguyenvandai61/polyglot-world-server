@@ -1,5 +1,6 @@
 from django.db.models import fields
 from rest_framework import serializers
+from app.models.MyUser import MyUser
 
 from app.models.Post import Post
 from app.mserializers.UserSerialziers import ProfileGeneralSerializer
@@ -19,8 +20,12 @@ class PostSerializer(serializers.ModelSerializer):
         return author_serializer.data
     
     def get_is_hearted(self, post):
-        author = post.author
-        return author.is_hearted(post.id)
+        try:
+            user_id = MyUser.objects.get(id=self.context['request'].user.id).id
+        except MyUser.DoesNotExist:
+            return False
+        return post.hearts.filter(id=user_id).exists()
+        
     
     def get_first_comment(self, post):
         if post.comments.count() == 0:
@@ -34,3 +39,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+        
+
+class HeartSerializer(serializers.Serializer):
+    is_hearted = serializers.BooleanField()
