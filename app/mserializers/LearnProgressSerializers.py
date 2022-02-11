@@ -19,4 +19,6 @@ class LearnProgressSerializer(serializers.ModelSerializer):
         today = datetime.now().date().strftime('%Y-%m-%d')
         if (learn_progress.lastest7dayexp is None):
             return 0
+        if learn_progress.lastest7dayexp.get(today) is None:
+            return 0
         return learn_progress.lastest7dayexp[today]
