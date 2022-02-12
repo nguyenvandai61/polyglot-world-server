@@ -7,12 +7,12 @@ from app import serializers
 
 from app.models.Post import Post
 from app.mserializers.PostSerializers import HeartSerializer
-from app.mserializers.UserSerialziers import ProfileGeneralSerializer
+from app.mserializers.UserSerialziers import ProfileGeneralSerializer, UserFullnameSerializer
 from app.utils.paginations import SmallResultsSetPagination
 
 
 class PostHeart(generics.ListAPIView, APIView):
-    serializer_class = ProfileGeneralSerializer
+    serializer_class = UserFullnameSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = SmallResultsSetPagination

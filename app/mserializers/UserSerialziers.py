@@ -33,3 +33,13 @@ class UserLearnProgressSerializer(serializers.Serializer):
     def to_representation(self, instance):
         serializer = LearnProgressSerializer(instance.learn_progress)
         return serializer.data
+    
+
+class UserFullnameSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    class Meta:
+        model = MyUser
+        fields = ('id', 'username', 'full_name')
+        
+    def get_full_name(self, user: MyUser):
+        return user.get_full_name()
