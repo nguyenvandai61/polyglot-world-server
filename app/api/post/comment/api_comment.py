@@ -5,10 +5,11 @@ from rest_framework.pagination import LimitOffsetPagination
 from app.models.Comment import Comment
 
 from app.models.Post import Post
-from app.mserializers.CommentSerializers import CommentCreateSerializer, CommentSerializer
+from app.mserializers.CommentSerializers import CommentCreateResponseSerializer, CommentCreateSerializer, CommentSerializer, CommentVoteResponseSerializer, CommentVoteSerializer
 from app.mserializers.UserSerialziers import ProfileGeneralSerializer
 from app.utils.paginations import SmallResultsSetPagination
 
+from drf_yasg.utils import swagger_auto_schema
 
 class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
@@ -28,6 +29,12 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
             self.pagination_class = LimitOffsetPagination
         return self.paginator.paginate_queryset(queryset, self.request, view=self)  
     
+    @swagger_auto_schema(
+        request_body=CommentCreateSerializer,
+        responses={
+            200: CommentCreateResponseSerializer,
+        }        
+    )
     def post(self, request, *args, **kwargs):
         post_id = self.kwargs['pk']
         content = request.data['content']
@@ -39,7 +46,7 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
             comment = Comment().create(author=request.user, content=content, post=post)
             post.comments.add(comment)
             post.n_comment += 1
-            serializer = CommentCreateSerializer(comment)
+            serializer = CommentCreateResponseSerializer(comment)
             post.save()
             return Response(status=status.HTTP_201_CREATED, data=serializer.data)
         except Post.DoesNotExist:
@@ -72,6 +79,9 @@ class PostChildComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
     def get_queryset(self):
         return super().get_queryset().filter(parent_id=self.kwargs['comment_id'])    
 
+    @swagger_auto_schema(
+        request_body=CommentCreateSerializer,
+    )
     def post(self, request, *args, **kwargs):
         post_id = self.kwargs['pk']
         comment_id = self.kwargs['comment_id']
@@ -88,7 +98,7 @@ class PostChildComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
             return Response(status=status.HTTP_200_OK, data={
                 "id": comment.id,
                 "author_id": comment.author.id,
-                "parent_id": comment.parent_comments.id,
+                "parent_id": comment.parent_comment.id,
                 "time_stamp": comment.time_stamp,
                 "content": comment.content,
                 "detail": "Comment created"
@@ -108,3 +118,50 @@ class PostChildComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
             post.child_comments.n_comment -= 1
         except Post.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
+        
+        
+class PostCommentVote(generics.GenericAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CommentVoteSerializer
+    queryset = Comment.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(id=self.kwargs['comment_id'])
+
+    @swagger_auto_schema(responses={200: CommentVoteResponseSerializer})
+    def put(self, request, *args, **kwargs):
+        post_id = self.kwargs['pk']
+        comment_id = self.kwargs['comment_id']
+        vote = request.data['vote']
+        
+        comment = Comment.objects.get(id=comment_id)
+        post = Post.objects.get(id=post_id)
+        has_upvoted = comment.upvotes.filter(id=request.user.id).exists()
+        has_downvoted = comment.downvotes.filter(id=request.user.id).exists()
+        
+        if has_upvoted:
+            if not vote == 1:
+                comment.upvotes.remove(request.user)
+                comment.n_upvote -= 1
+            if vote == -1:
+                comment.downvotes.add(request.user)
+                comment.n_downvote += 1
+        elif has_downvoted:
+            if not vote == -1:
+                comment.downvotes.remove(request.user)
+                comment.n_downvote -= 1
+            if vote == 1:
+                comment.upvotes.add(request.user)
+                comment.n_upvote += 1
+        else:
+            if vote == 1:
+                comment.upvotes.add(request.user)
+                comment.n_upvote += 1
+            elif vote == -1:
+                comment.downvotes.add(request.user)
+                comment.n_downvote += 1
+        
+        serializer = CommentVoteResponseSerializer(comment)
+        comment.save()
+        return Response(status=status.HTTP_200_OK, data=serializer.data)

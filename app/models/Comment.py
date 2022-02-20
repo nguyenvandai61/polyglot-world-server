@@ -30,4 +30,9 @@ class Comment(models.Model):
         self.save()
         return self
     
+    def has_upvoted(self, user):
+        return self.upvotes.filter(id=user.id).exists()
+    
+    def has_downvoted(self, user):
+        return self.downvotes.filter(id=user.id).exists()
     
