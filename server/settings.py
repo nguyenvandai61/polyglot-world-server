@@ -17,6 +17,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -28,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ASGI_APPLICATION = "server.asgi.application"
 
 # Application definition
 
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'corsheaders',
     'drf_yasg',
+    'channels',
 ]
 
 AUTH_USER_MODEL = "app.MyUser"
