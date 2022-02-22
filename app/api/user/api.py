@@ -1,7 +1,7 @@
 from app.models.MyUser import MyUser
 from rest_framework import generics, serializers, status, permissions
 from rest_framework.response import Response
-from app.mserializers.UserSerialziers import ProfileSerializer, UserSearchFollowSerializer, UserLearnProgressSerializer
+from app.mserializers.UserSerialziers import FriendExpSerializer, ProfileSerializer, UserSearchFollowSerializer, UserLearnProgressSerializer
 from app.models.LearnProgress import LearnProgress
 import cloudinary.uploader
 
@@ -118,3 +118,11 @@ class UserSearchFollow(generics.ListAPIView):
         username = self.kwargs.get('username_query')
         return MyUser.objects.filter(username__icontains=username)\
             .exclude(id=self.request.user.id).order_by('username')
+            
+class MyFriendListWithExp(generics.ListAPIView):
+    serializer_class = FriendExpSerializer
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        return MyUser.objects.filter(followers=self.request.user)
+    

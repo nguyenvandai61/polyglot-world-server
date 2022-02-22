@@ -56,3 +56,13 @@ class UserSearchFollowSerializer(serializers.ModelSerializer):
     
     def get_total_exp(self, user: MyUser):
         return user.learn_progress.total_exp
+    
+class FriendExpSerializer(serializers.ModelSerializer):
+    learn_progress = LearnProgressSerializer()
+    full_name = serializers.SerializerMethodField()
+    class Meta:
+        model = MyUser
+        fields = ('id', 'username', 'full_name', 'avatar', 'learn_progress')
+        
+    def get_full_name(self, user: MyUser):
+        return user.get_full_name()

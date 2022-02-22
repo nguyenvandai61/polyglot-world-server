@@ -1,6 +1,6 @@
 from django.urls import include, path
 from .api import ProfileDetail, AvatarUpload, UserLearnProgress, UserList, FollowUser, UserSearchByUsername\
-    , UserSearchFollow
+    , UserSearchFollow, MyFriendListWithExp
 
 
 urlpatterns = [
@@ -12,4 +12,5 @@ urlpatterns = [
     path('follow/<int:id>/unfollow/', FollowUser.as_view(), name='unfollow_user'),
     path('search/username/<str:username_query>', UserSearchByUsername.as_view(), name='search'),
     path('search/follow/username/<str:username_query>', UserSearchFollow.as_view(), name='search_follow'),
+    path('me/friend/exp/', MyFriendListWithExp.as_view(), name='friend_exp'),
 ]
