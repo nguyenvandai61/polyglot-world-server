@@ -96,6 +96,9 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True)
+    
+    followers = models.ManyToManyField('self', related_name='user_followers', symmetrical=False)
+    
     learn_progress = models.OneToOneField(
         LearnProgress, on_delete=models.CASCADE, null=True, blank=True)
     
@@ -117,6 +120,10 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
 
     def is_hearted(self, post_id):
         return self.hearts.filter(id=post_id).exists()
+    
+    def make_friend(self, friend: 'MyUser'):
+        self.friends.add(friend)
+        friend.friends.add(self)
     
     class Meta:
         db_table = 'auth_user'

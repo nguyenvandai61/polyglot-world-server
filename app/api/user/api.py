@@ -1,11 +1,11 @@
 from app.models.MyUser import MyUser
 from rest_framework import generics, serializers, status, permissions
 from rest_framework.response import Response
-from app.mserializers.UserSerialziers import ProfileSerializer, UserLearnProgressSerializer
+from app.mserializers.UserSerialziers import ProfileSerializer, UserSearchFollowSerializer, UserLearnProgressSerializer
 from app.models.LearnProgress import LearnProgress
 import cloudinary.uploader
 
-from app.utils.paginations import SmallResultsSetPagination
+from app.utils.paginations import SmallResultsSetPagination, UltraSmallResultsSetPagination
 
 
 class ProfileDetail(generics.RetrieveAPIView):
@@ -68,3 +68,53 @@ class UserLearnProgress(generics.GenericAPIView):
         user = MyUser.objects.get(id=user_id)
         serializer = self.get_serializer(user)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+    
+
+class UserList(generics.ListAPIView):
+    queryset = MyUser.objects.all()
+    serializer_class = ProfileSerializer
+    pagination_class = SmallResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+class FollowUser(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('id')
+        if user_id == request.user.id:
+            return Response(status=status.HTTP_403_FORBIDDEN, data={
+                'status': 'error',
+                'detail': 'You cannot follow yourself.'
+            })
+        user = MyUser.objects.get(id=user_id)
+            
+        # check request url contain unfollow
+        if 'unfollow' in request.path:
+            user.followers.remove(request.user)
+            user.save()
+            return Response(status=status.HTTP_200_OK, data={
+                'status': 'success',
+                'detail': 'You are no longer following this user.'
+            })
+        else:
+            user.followers.add(request.user)
+            user.save()
+            return Response(status=status.HTTP_200_OK, data={
+                'status': 'success',
+                'detail': 'You are now following this user.'
+            })
+            
+class UserSearchByUsername(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        username = self.kwargs.get('username_query')
+        return MyUser.objects.filter(username__icontains=username)
+    
+class UserSearchFollow(generics.ListAPIView):
+    serializer_class = UserSearchFollowSerializer
+    pagination_class = SmallResultsSetPagination
+    
+    def get_queryset(self):
+        username = self.kwargs.get('username_query')
+        return MyUser.objects.filter(username__icontains=username)\
+            .exclude(id=self.request.user.id).order_by('username')

@@ -43,3 +43,16 @@ class UserFullnameSerializer(serializers.ModelSerializer):
         
     def get_full_name(self, user: MyUser):
         return user.get_full_name()
+    
+class UserSearchFollowSerializer(serializers.ModelSerializer):
+    is_following = serializers.SerializerMethodField()
+    total_exp = serializers.SerializerMethodField()
+    class Meta:
+        model = MyUser
+        fields = ('id', 'avatar', 'username', 'first_name', 'last_name', 'total_exp', 'is_following')
+        
+    def get_is_following(self, user: MyUser):
+        return user.followers.filter(id=self.context['request'].user.id).exists()
+    
+    def get_total_exp(self, user: MyUser):
+        return user.learn_progress.total_exp
