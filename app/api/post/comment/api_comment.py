@@ -19,7 +19,8 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
     queryset = Comment.objects.all()
 
     def get_queryset(self):
-        return super().get_queryset().filter(post_id=self.kwargs['pk'])
+        return super().get_queryset()\
+            .filter(post_id=self.kwargs['pk']).filter(parent_comment=None).order_by('time_stamp')
     
     def paginate_queryset(self, queryset):
         """
@@ -37,13 +38,15 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
     )
     def post(self, request, *args, **kwargs):
         post_id = self.kwargs['pk']
+        comment_id = self.kwargs.get('comment_id')
         content = request.data['content']
         if content == "":
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"detail": "Comment is empty"})
 
         try:
             post = Post.objects.get(id=post_id)
-            comment = Comment().create(author=request.user, content=content, post=post)
+            comment_parent = Comment.objects.get(id=comment_id) if comment_id else None
+            comment = Comment().create(author=request.user, content=content, post=post, parent=comment_parent)
             post.comments.add(comment)
             post.n_comment += 1
             serializer = CommentCreateResponseSerializer(comment)
@@ -67,57 +70,6 @@ class PostComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
         except Comment.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Comment not found"})
-        
-        
-class PostChildComment(mixins.DestroyModelMixin, generics.ListCreateAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    pagination_class = SmallResultsSetPagination
-    serializer_class = CommentSerializer
-    queryset = Comment.objects.all()
-
-    def get_queryset(self):
-        return super().get_queryset().filter(parent_id=self.kwargs['comment_id'])    
-
-    @swagger_auto_schema(
-        request_body=CommentCreateSerializer,
-    )
-    def post(self, request, *args, **kwargs):
-        post_id = self.kwargs['pk']
-        comment_id = self.kwargs['comment_id']
-        content = request.data['content']
-        if content == "":
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={"detail": "Comment is empty"})
-
-        try:
-            parent_comment = Comment.objects.get(id=comment_id)
-            post = Post.objects.get(id=post_id)
-            comment = Comment().create(author=request.user, content=content, post=post, parent=parent_comment)
-            parent_comment.child_comments.add(comment)
-            parent_comment.save()
-            return Response(status=status.HTTP_200_OK, data={
-                "id": comment.id,
-                "author_id": comment.author.id,
-                "parent_id": comment.parent_comment.id,
-                "time_stamp": comment.time_stamp,
-                "content": comment.content,
-                "detail": "Comment created"
-            })
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
-        except Comment.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Comment not found"})
-    
-    def delete(self, request, *args, **kwargs):
-        post_id = self.kwargs['pk']
-        comment_id = self.kwargs['comment_id']
-        try:
-            comment = Comment.objects.get(id=comment_id)
-            post = Post.objects.get(id=post_id)
-            post.child_comments.remove(comment)
-            post.child_comments.n_comment -= 1
-        except Post.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
         
         
 class PostCommentVote(generics.GenericAPIView):

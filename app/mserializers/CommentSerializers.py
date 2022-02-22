@@ -8,6 +8,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     has_upvoted = serializers.SerializerMethodField()
     has_downvoted = serializers.SerializerMethodField()
+    child_comments = serializers.SerializerMethodField()
     class Meta:
         model = Comment
         fields = '__all__'
@@ -21,6 +22,11 @@ class CommentSerializer(serializers.ModelSerializer):
     
     def get_has_downvoted(self, comment: Comment):
         return comment.has_downvoted(self.context['request'].user)
+    
+    def get_child_comments(self, comment: Comment, *args, **kwargs):
+        kwargs.setdefault('context', {})['request'] = self.context['request']
+        comment_serializer = ChildCommentsSerializer(comment, **kwargs)
+        return comment_serializer.data.get('child_comments')
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
@@ -51,3 +57,17 @@ class CommentVoteResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['n_upvote', 'n_downvote']
+
+       
+class ChildCommentsSerializer(serializers.ModelSerializer):
+    child_comments = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Comment
+        fields = ['child_comments']
+        
+    def get_child_comments(self, comment, *args, **kwargs):        
+        child_comments = Comment.objects.filter(parent_comment=comment).order_by('time_stamp')
+        kwargs.setdefault('context', {})['request'] = self.context['request']
+        child_comments_serializer = CommentSerializer(child_comments, many=True, **kwargs)
+        return child_comments_serializer.data

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
@@ -98,5 +99,15 @@ class MyLearnProgressAPI(APIView):
     def get(self, request):
         user_id = request.user.id
         user = MyUser.objects.get(id=user_id)
+        
+        yesterday = datetime.now() - timedelta(days=1)
+        yesterday_format = yesterday.strftime('%Y-%m-%d')
+
+        online_yesterday = yesterday_format in list(user.learn_progress.lastest7dayexp)
+        online_today = datetime.now().strftime('%Y-%m-%d') in list(user.learn_progress.lastest7dayexp)
+        if (not online_yesterday and not online_today):
+            user.learn_progress.streak_count = 0
+            user.learn_progress.save()
+        
         serializer = self.serializer_class(user)
         return Response(serializer.data)

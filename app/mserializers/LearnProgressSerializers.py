@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from rest_framework import serializers
 from app.models.LearnProgress import LearnProgress
 
@@ -10,7 +10,7 @@ class LearnProgressSerializer(serializers.ModelSerializer):
         model = LearnProgress
         fields = '__all__'
     
-    def get_lastest7dayexp(self, learn_progress):
+    def get_lastest7dayexp(self, learn_progress: LearnProgress):
         if (learn_progress.lastest7dayexp is None):
             return {}
         return learn_progress.lastest7dayexp

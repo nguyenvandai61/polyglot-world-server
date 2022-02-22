@@ -13,7 +13,6 @@ class Comment(models.Model):
     n_upvote = models.IntegerField(default=0)
     n_downvote = models.IntegerField(default=0)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    child_comments = models.ManyToManyField('self', related_name='child_comments', blank=True)
 
     def __str__(self):
         return self.content
