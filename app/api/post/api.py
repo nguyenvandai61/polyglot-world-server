@@ -13,9 +13,6 @@ class PostList(generics.ListCreateAPIView):
     serializer_class = PostSerializer
     queryset = Post.objects.all()
     pagination_class = SmallResultsSetPagination
-    
-    def get_serializer(self, *args, **kwargs):
-        return super().get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         data = request.data

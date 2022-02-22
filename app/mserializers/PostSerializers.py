@@ -1,3 +1,4 @@
+from urllib import request
 from django.db.models import fields
 from rest_framework import serializers
 from app.models.MyUser import MyUser
@@ -27,11 +28,14 @@ class PostSerializer(serializers.ModelSerializer):
         return post.hearts.filter(id=user_id).exists()
         
     
-    def get_first_comment(self, post):
+    def get_first_comment(self, post, *args, **kwargs):
         if post.comments.count() == 0:
             return None
         else:
-            comment_serializer = CommentSerializer(post.comments.first())
+            kwargs.setdefault('context', {
+                'request': self.context['request'],
+            })
+            comment_serializer = CommentSerializer(post.comments.first(), **kwargs)
             return comment_serializer.data
         
         

@@ -117,7 +117,7 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
                 
         if not date in lastest7dayexp:
             #  clean the lastest7dayexp
-            for key in lastest7dayexp:
+            for key in list(lastest7dayexp):
                 if datetime.strptime(key, self.ftime) < datetime.now() - timedelta(days=7):
                     lastest7dayexp.pop(key)
             # if yesterday answer is right, add 1 to the streak
