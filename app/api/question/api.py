@@ -39,17 +39,22 @@ class QuestionDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = QuestionSerializer
 
 
-class QuestionRandom(generics.ListAPIView):
+class QuestionRandom(generics.GenericAPIView):
     """
     List questions.
     """
-    serializer_class = QuestionWithoutRAnswerSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = SmallResultsSetPagination
 
-    def get_queryset(self):
-        randomQuestion = Question.objects.order_by('?')
-        return randomQuestion
+    def get(self, request, *args, **kwargs):
+        
+        questions = Question.objects.order_by('?')
+        questions = questions[:1]
+        question = questions[0]
+        
+        kwargs.setdefault('context', {})['request'] = request
+        serializer = QuestionWithoutRAnswerSerializer(question, **kwargs)
+        return Response(serializer.data)
+        
 
 
 class QuestionUpvote(generics.UpdateAPIView):
@@ -99,10 +104,30 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
     def format_time(self, time):
         return time.strftime(self.ftime)
     
+    def validate_token(self, token: str, question: Question, user, **kwargs):
+        tokens = token.split("ptoken")
+        token_user_id = tokens[0]
+        token_time = tokens[1]
+        
+        if token_user_id != str(user.id):
+            return False
+        else:
+            if datetime.now() - datetime.strptime(token_time, "%Y%m%d%H%M%S") > timedelta(seconds=question.time_limit+10):
+                return False
+            else:
+                return True
+        
+        
+    
     def post(self, request, *args, **kwargs):
         question = self.get_object()
         right_answer = question.right_answer
         answer = request.data['answer']
+        token = request.data['token']
+        user = request.user
+        is_valid = self.validate_token(token, question, user, **kwargs)
+        if not is_valid:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "Invalid token"})
         is_right = answer == right_answer
         
         user = MyUser.objects.get(id=request.user.id)
