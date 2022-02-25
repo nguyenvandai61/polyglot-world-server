@@ -15,3 +15,14 @@ class PredictNextWordDict(generics.GenericAPIView):
         return Response({
             'results': results
         })
+
+class GetWordDict(generics.GenericAPIView):
+
+		def get(self, request, *args, **kwargs):
+				try:
+						results = PredictNextWordServices().get_word_in_dict(kwargs['substart_word'])
+				except Exception as e:
+						return Response({'status': 'error', 'message': str(e)})
+				return Response({
+						'results': results
+				})
