@@ -10,4 +10,5 @@ urlpatterns = [
     path('predict/', include("app.api.predict.urls"), name="predict"),
     path('question/', include("app.api.question.urls"), name="question"),
     path('statastic/', include("app.api.statastic.urls"), name="statastic"),
+    path('translate/', include("app.api.translate.urls"), name="translate"),
 ]
