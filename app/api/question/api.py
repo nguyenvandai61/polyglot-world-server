@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from app.models.MyUser import MyUser
 
 from app.mserializers.QuestionSerializer import QuestionCreateSerializer, QuestionSerializer, QuestionSubmitAnswerSerializer, QuestionVoteSerializer, QuestionWithoutRAnswerSerializer
-from app.models.Question import Question
+from app.models.Question import QUESTION_TYPE_CHOICES, Question
 from app.utils.paginations import SmallResultsSetPagination
 
 
@@ -168,4 +168,14 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
                 "total_exp": user.learn_progress.total_exp,
                 "today_exp": lastest7dayexp[date]
             })
-        
+
+class QuestionTypeApi(generics.GenericAPIView):
+
+    def get(self, request, *args, **kwargs):
+        question_types = []
+        for question_type_choice in QUESTION_TYPE_CHOICES:
+          question_type = {}
+          question_type['abbr'] = question_type_choice[0]
+          question_type['name'] = question_type_choice[1]
+          question_types.append(question_type)
+        return Response(status=status.HTTP_200_OK, data=question_types)

@@ -8,7 +8,7 @@ from app.models.Question import Question
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('id', 'content', 'type', 'exp', 'n_upvote', 'n_downvote', 'answers', 'right_answer', 'explain', 'time_limit')
+        fields = ('id', 'content', 'type', 'exp', 'n_upvote', 'n_downvote', 'answers', 'right_answer', 'explain', 'time_limit', 'time_stamp')
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer):

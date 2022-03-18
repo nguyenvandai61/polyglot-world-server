@@ -1,5 +1,5 @@
 from django.urls import include, path
-from .api import QuestionApi, QuestionDetail, QuestionRandom, QuestionUpvote, QuestionDownvote, QuestionSubmitAnswer
+from .api import QuestionApi, QuestionDetail, QuestionRandom, QuestionUpvote, QuestionDownvote, QuestionSubmitAnswer, QuestionTypeApi
 
 
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
     path('<int:pk>/downvote/', QuestionDownvote.as_view(), name='question_downvote'),
     path('<int:pk>/submit/', QuestionSubmitAnswer.as_view(), name='question_submit'),
     path('random/', QuestionRandom.as_view(), name='question_random'),
+    path('type/', QuestionTypeApi.as_view(), name='question_type'),
 ]
