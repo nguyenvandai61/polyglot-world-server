@@ -1,7 +1,7 @@
 from django.urls import include, path
 from .api import PostList, PostInfo, PostListByUser, PostListByLanguage, PostListByLanguageAndUser
 from .heart.api_heart import PostHeart
-from .comment.api_comment import PostComment, PostChildComment
+from .comment.api_comment import PostComment, PostCommentVote
 
 urlpatterns = [
     path('', PostList.as_view(), name='post-list'),
@@ -14,5 +14,5 @@ urlpatterns = [
     path('<int:pk>/heart/', PostHeart.as_view(), name='post-like'),
     path('<int:pk>/comment/', PostComment.as_view(), name='post-comment'),
     path('<int:pk>/comment/<int:comment_id>/', PostComment.as_view(), name='post-comment'),
-    path('<int:pk>/comment/<int:comment_id>/child/', PostChildComment.as_view(), name='post-child-comment'),
+    path('<int:pk>/comment/<int:comment_id>/vote/', PostCommentVote.as_view(), name='post-comment-vote'),
 ]

@@ -5,8 +5,8 @@ from app.models.MyUser import MyUser
 from app.mserializers.PostSerializers import PostCreateSerializer, PostSerializer
 from app.models.Post import Post
 from app.models.Language import Language
-from app.mserializers.UserSerialziers import ProfileGeneralSerializer
 from app.utils.paginations import SmallResultsSetPagination
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class PostList(generics.ListCreateAPIView):
@@ -23,13 +23,14 @@ class PostList(generics.ListCreateAPIView):
         serializer = PostCreateSerializer(data=data)
         if serializer.is_valid():
             new_post = serializer.save()
-            ret_serializer = PostSerializer(new_post)
+            ret_serializer = self.get_serializer(new_post)
             return Response(ret_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PostInfo(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PostSerializer
+    authentication_classes = [JWTAuthentication]
     queryset = Post.objects.all()
 
     def get_object(self):
@@ -41,7 +42,7 @@ class PostInfo(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         if self.get_object() is None:
             return Response(status=status.HTTP_404_NOT_FOUND, data={"detail": "Post not found"})
-        serializers = PostSerializer(
+        serializers = self.get_serializer(
             self.get_object(), data=request.data, partial=True)
         if serializers.is_valid():
             serializers.save()
@@ -51,7 +52,7 @@ class PostInfo(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         if self.get_object() is None:
             return Response(status=status.HTTP_404_NOT_FOUND, data={'detail': 'Post not found'})
-        serializers=PostSerializer(self.get_object())
+        serializers=self.get_serializer(self.get_object())
         return Response(serializers.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
@@ -65,9 +66,10 @@ class PostListByUser(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = SmallResultsSetPagination
+    authentication_classes = [JWTAuthentication]
     
     def get_queryset(self, *args, **kwargs):
-        queryset = self.queryset.filter(author=kwargs['pk'])
+        queryset = self.queryset.filter(author=self.kwargs['pk'])
         return queryset
     
 

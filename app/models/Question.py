@@ -23,6 +23,7 @@ class Question(models.Model):
     answers = models.JSONField(default='')
     right_answer = models.TextField(default='')
     explain = models.TextField(default='')
+    time_limit = models.IntegerField(default=0)
 
     def __str__(self):
         return self.content

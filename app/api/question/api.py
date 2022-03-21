@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import Http404
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from app.models.MyUser import MyUser
 
 from app.mserializers.QuestionSerializer import QuestionCreateSerializer, QuestionSerializer, QuestionSubmitAnswerSerializer, QuestionVoteSerializer, QuestionWithoutRAnswerSerializer
-from app.models.Question import Question
+from app.models.Question import QUESTION_TYPE_CHOICES, Question
 from app.utils.paginations import SmallResultsSetPagination
 
 
@@ -28,6 +28,17 @@ class QuestionApi(generics.ListCreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+      
+class QuestionMyApi(generics.ListAPIView):
+    """
+    List questions.
+    """
+    serializer_class = QuestionSerializer
+    pagination_class = SmallResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Question.objects.filter(author=self.request.user)
     
     
     
@@ -39,17 +50,22 @@ class QuestionDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = QuestionSerializer
 
 
-class QuestionRandom(generics.ListAPIView):
+class QuestionRandom(generics.GenericAPIView):
     """
     List questions.
     """
-    serializer_class = QuestionWithoutRAnswerSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = SmallResultsSetPagination
 
-    def get_queryset(self):
-        randomQuestion = Question.objects.order_by('?')
-        return randomQuestion
+    def get(self, request, *args, **kwargs):
+        
+        questions = Question.objects.order_by('?')
+        questions = questions[:1]
+        question = questions[0]
+        
+        kwargs.setdefault('context', {})['request'] = request
+        serializer = QuestionWithoutRAnswerSerializer(question, **kwargs)
+        return Response(serializer.data)
+        
 
 
 class QuestionUpvote(generics.UpdateAPIView):
@@ -94,11 +110,35 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
     queryset = Question.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = QuestionSubmitAnswerSerializer
+    ftime = "%Y-%m-%d"
+    
+    def format_time(self, time):
+        return time.strftime(self.ftime)
+    
+    def validate_token(self, token: str, question: Question, user, **kwargs):
+        tokens = token.split("ptoken")
+        token_user_id = tokens[0]
+        token_time = tokens[1]
+        
+        if token_user_id != str(user.id):
+            return False
+        else:
+            if datetime.now() - datetime.strptime(token_time, "%Y%m%d%H%M%S") > timedelta(seconds=question.time_limit+10):
+                return False
+            else:
+                return True
+        
+        
     
     def post(self, request, *args, **kwargs):
         question = self.get_object()
         right_answer = question.right_answer
         answer = request.data['answer']
+        token = request.data['token']
+        user = request.user
+        is_valid = self.validate_token(token, question, user, **kwargs)
+        if not is_valid:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "Invalid token"})
         is_right = answer == right_answer
         
         user = MyUser.objects.get(id=request.user.id)
@@ -107,13 +147,25 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
             user.learn_progress.total_exp += question.exp
             
         # Update the user's streak
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = self.format_time(datetime.now())
         lastest7dayexp = user.learn_progress.lastest7dayexp
         lastest7dayexp = lastest7dayexp if lastest7dayexp else {}
+                
         if not date in lastest7dayexp:
-            user.learn_progress.streak_count+=1
-        # datetime now timestamp
-        lastest7dayexp[date] = user.learn_progress.total_exp
+            #  clean the lastest7dayexp
+            for key in list(lastest7dayexp):
+                if datetime.strptime(key, self.ftime) < datetime.now() - timedelta(days=7):
+                    lastest7dayexp.pop(key)
+            # if yesterday answer is right, add 1 to the streak
+            yesterday = datetime.now() - timedelta(days=1)
+            is_streak = self.format_time(yesterday) in lastest7dayexp
+            user.learn_progress.streak_count+=1 if is_streak else 1
+            # update exp today
+            lastest7dayexp[date] = question.exp
+        else:
+            # update exp today
+            if is_right:
+                lastest7dayexp[date] += question.exp
         user.learn_progress.lastest7dayexp = lastest7dayexp
         # Update user's learn progress
         user.learn_progress.save()
@@ -125,5 +177,17 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
                 "message": "Answer submitted",
                 "streak_count": user.learn_progress.streak_count,
                 "total_exp": user.learn_progress.total_exp,
+                "today_exp": lastest7dayexp[date],
+                "explain": question.explain,
             })
-        
+
+class QuestionTypeApi(generics.GenericAPIView):
+
+    def get(self, request, *args, **kwargs):
+        question_types = []
+        for question_type_choice in QUESTION_TYPE_CHOICES:
+          question_type = {}
+          question_type['abbr'] = question_type_choice[0]
+          question_type['name'] = question_type_choice[1]
+          question_types.append(question_type)
+        return Response(status=status.HTTP_200_OK, data=question_types)
