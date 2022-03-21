@@ -28,6 +28,17 @@ class QuestionApi(generics.ListCreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+      
+class QuestionMyApi(generics.ListAPIView):
+    """
+    List questions.
+    """
+    serializer_class = QuestionSerializer
+    pagination_class = SmallResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Question.objects.filter(author=self.request.user)
     
     
     
@@ -166,7 +177,8 @@ class QuestionSubmitAnswer(generics.GenericAPIView):
                 "message": "Answer submitted",
                 "streak_count": user.learn_progress.streak_count,
                 "total_exp": user.learn_progress.total_exp,
-                "today_exp": lastest7dayexp[date]
+                "today_exp": lastest7dayexp[date],
+                "explain": question.explain,
             })
 
 class QuestionTypeApi(generics.GenericAPIView):

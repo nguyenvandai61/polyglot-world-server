@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-9uh1!h$$_qxxiu&%uxlz*0&lkr*kq-4d*5wd!)kz2&#+by4p(&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True 
 
 # Application definition
 
@@ -83,11 +83,6 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
-
-
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8080',
-]
 
 ROOT_URLCONF = 'server.urls'
 
@@ -161,6 +156,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

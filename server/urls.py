@@ -30,6 +30,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', TemplateView.as_view(template_name='index.html'), name='index'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger',
@@ -37,4 +38,6 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc',
                                              cache_timeout=0), name='schema-redoc'),
     path('api/', include('app.urls'), name='api'),
+    path('admin/', TemplateView.as_view(template_name='admin.html'), name='admin'),
+    path('welcome/', TemplateView.as_view(template_name='welcome.html'), name='welcome'), 
 ]
